@@ -3,45 +3,37 @@ package com.example.copsboot.user;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
+import java.util.Set;           // ← IMPORT CORRECTO
+import java.util.UUID;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+// NUNCA esto:
+// import org.hibernate.mapping.Set;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
-
     private final UserService userService;
-    private final UserRepository userRepository;
 
-    public UserController(UserService userService, UserRepository userRepository) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.userRepository = userRepository;
     }
 
-    // ✅ Permite POST sin autenticación si lo configuras en SecurityConfig
     @PostMapping
-    public ResponseEntity<User> createUser(@Valid @RequestBody CreateUserParameters parameters) {
-        User user = userService.createUser(
-                parameters.getEmail(),
-                parameters.getPassword(),
-                parameters.getRoles()
-        );
-        return ResponseEntity.status(HttpStatus.CREATED).body(user);
+    @ResponseStatus(HttpStatus.CREATED)
+    public User createUser(@Valid @RequestBody CreateUserRequest req) {
+        UUID id = UUID.randomUUID();
+        // req.getRoles() debe devolver java.util.Set<UserRole>
+        return userService.createUser(id,
+                req.getEmail(),
+                req.getPassword(),
+                req.getRoles());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUser(@PathVariable("id") UserId id) {
-        return userRepository.findById(id)
+    public ResponseEntity<User> getUser(@PathVariable UUID id) {
+        return userService.findById(id)
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
-    }
-
-    @GetMapping
-    public Iterable<User> getAllUsers() {
-        return userRepository.findAll();
     }
 }

@@ -1,35 +1,31 @@
 package com.example.copsboot.user;
 
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Set;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.Set;               // ← IMPORTACIÓN CORRECTA
 
 @Service
+@Transactional
 public class UserService {
-    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
-
+    public UserService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public User createUser(String email, String password, Set<UserRole> roles) {
-        UserId userId = userRepository.nextId();
-        String hashedPassword = passwordEncoder.encode(password); // ✅ encriptado
-        User user = new User(userId, email, hashedPassword, roles);
+    public User createUser(UUID id, String email, String rawPassword, Set<UserRole> roles) {
+        String encoded = passwordEncoder.encode(rawPassword);
+        User user = new User(id, email, encoded, roles);
         return userRepository.save(user);
     }
 
-    @Bean
-    CommandLineRunner init(UserService userService) {
-        return args -> {
-            userService.createUser("admin@viayage.com", "123456", Set.of(UserRole.ADMIN));
-        };
+    public Optional<User> findById(UUID id) {
+        return userRepository.findById(id);
     }
-
 }

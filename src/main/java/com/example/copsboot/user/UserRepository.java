@@ -1,9 +1,7 @@
+// src/main/java/com/example/copsboot/user/UserRepository.java
 package com.example.copsboot.user;
 
 import org.springframework.data.repository.CrudRepository;
+import java.util.UUID;
 
-import java.util.Optional;
-
-public interface UserRepository extends CrudRepository<User, UserId>, UserRepositoryCustom {
-    Optional<User> findByEmail(String email); // ✅ agregado
-}
+public interface UserRepository extends CrudRepository<User, UUID> {}
