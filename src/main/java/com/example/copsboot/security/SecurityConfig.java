@@ -19,7 +19,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users", "/h2-console/**").permitAll()
                         .anyRequest().authenticated()
                 )
-                .formLogin(withDefaults()); // ✅ login predeterminado
+                .formLogin(withDefaults());
 
         return http.build();
     }
